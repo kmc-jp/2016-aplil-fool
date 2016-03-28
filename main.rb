@@ -6,12 +6,12 @@ begin
   when "/"
     puts <<EOS
 HTTP/1.0 200 OK
+Content-type: image/png
 
-<!doctype html>
-<p>work</p>
 EOS
+    print File.read("index.png")
   else
-    puts "HTTP/1.0 404 Not Found"
+    puts "HTTP/1.0 404 Not Found\n\nNot Found"
   end
 rescue => e
   puts "HTTP/1.0 400 Bad Request"
