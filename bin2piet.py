@@ -60,7 +60,7 @@ def doByStatusCode(sx,sy,img,status,imgbyte,contentfin):
     return sx
 
 def getStatusContent(status):
-    return  b'HTTP/1.0 '+ status + b'\nContent-type: text/html\n\n<!DOCTYPE html><html lang="ja"><script>window.location.href="data:image/png;base64,'
+    return  b'HTTP/1.0 '+ status + b'\nContent-type: text/html\n\n<!DOCTYPE html><html lang="ja"><img src="data:image/png;base64,'
 
 if __name__ == "__main__" :
     status_200 = getStatusContent(b"200 OK")
@@ -69,7 +69,7 @@ if __name__ == "__main__" :
     Img_400 = getBase64Content("400.png")
     status_451 = getStatusContent(b"451 Unavailable For Legal Reasons")
     Img_451 = getBase64Content("451.png")
-    contentfin = b'";</script>'
+    contentfin = b'">'
     
     LEN  = len(status_200)+ len(Img_200)+len(contentfin)
     LEN += len(status_400)+ len(Img_400)+len(contentfin)
