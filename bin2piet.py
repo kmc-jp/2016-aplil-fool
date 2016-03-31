@@ -2,22 +2,6 @@ from PIL import Image
 import base64
 # 00 ~ 7F まではASCIIと同じだが、 80 ~ FF は難しいのでpngではなくhtmlを返す...
 
-def getPngData(fileName,requireW,requireH):
-    data = []
-    Max = 0
-    l = 0
-    with open (fileName,"rb")as f: 
-        rdata = f.read()
-    rdata = base64.b64encode(rdata)
-    print(rdata)
-    for d in rdata:
-        data.append(d)
-        Max = max(Max,d)
-        if d == 0: l += 4
-        else :l += 1
-    data.reverse() 
-    img = Image.new("RGB",( l + requireW, Max + requireH),(255,255,255))
-    return (img,data)
 
 def getBase64Content(fileName):
     with open (fileName,"rb")as f: 
@@ -74,30 +58,42 @@ def WhileNotEmpty(img,sx,sy):
     return sx+8 + 3
 
 def finPiet(img,sx,sy):
-    # sy == 0
+    # sy == 0?
     bs = [(0,1),(1,2),(2,2),(3,0),(3,1)]
     rs = [(2,0),(2,1),(1,1)]
     for b in bs: img.putpixel((sx + b[0],sy +b[1]),(0,0,0))
     for r in rs: img.putpixel((sx + r[0],sy +r[1]),(255,0,0))
+    return sx + 5 + 3
+    
 
-if __name__ == "__main__" :
-    sx,sy = 0,0
-    #content = b"HTTP/1.0 200 OK\nContent-type: image/png\n\n"
-    #content = b'HTTP/1.0 200 OK\nContent-type: text/html\n\n<!DOCTYPE html><html lang="ja"><img src="index.png"></html>'
-    #img,data = getPngData("index.png",len(content)+len(contentfin) + 100,sy) 
-    #sx = putBinary(img,data,sx,sy)
-    #sx = WhileNotEmpty(img,sx,sy)
-    #いろ変えるかい？
-    content = b'HTTP/1.0 200 OK\nContent-type: text/html\n\n<!DOCTYPE html><html lang="ja"><script>window.location.href="data:image/png;base64,'
-    content64 = getBase64Content("index.png")
-    contentfin = b'";</script>'
-    LEN  = len(content)+ len(content64)+len(contentfin)
-    img = Image.new("RGB",( 64 + LEN , 128),(255,255,255))
-    sx = putContent(img,content,sx,sy)
+def doByStatusCode(sx,sy,img,status,imgbyte,contentfin):
+    sx = putContent(img,status,sx,sy)
     sx = WhileNotEmpty(img,sx,sy)
-    sx = putContent(img,content64,sx,sy)
+    sx = putContent(img,imgbyte,sx,sy)
     sx = WhileNotEmpty(img,sx,sy)
     sx = putContent(img,contentfin,sx,sy)
     sx = WhileNotEmpty(img,sx,sy)
-    finPiet(img,sx,sy)
+    sx = finPiet(img,sx,sy)
+    return sx
+
+def getStatusContent(status):
+    return  b'HTTP/1.0 '+ status + b'\nContent-type: text/html\n\n<!DOCTYPE html><html lang="ja"><script>window.location.href="data:image/png;base64,'
+
+if __name__ == "__main__" :
+    sx,sy = 33,4
+    status_200 = getStatusContent(b"200 OK")
+    Img_200 = getBase64Content("200.png")
+    status_400 = getStatusContent(b"400 Bad Request")
+    Img_400 = getBase64Content("400.png")
+    status_451 = getStatusContent(b"451 Unavailable For Legal Reasons")
+    Img_451 = getBase64Content("451.png")
+    contentfin = b'";</script>'
+    
+    LEN  = len(status_200)+ len(Img_200)+len(contentfin)
+    LEN += len(status_400)+ len(Img_400)+len(contentfin)
+    LEN += len(status_451)+ len(Img_451)+len(contentfin)
+    img = Image.new("RGB",( 64 * 3 + LEN ,sy + 136),(255,255,255))
+    sx = doByStatusCode(sx,3,img,status_200,Img_200,contentfin)
+    sx = doByStatusCode(sx,2,img,status_400,Img_400,contentfin)
+    sx = doByStatusCode(sx,1,img,status_451,Img_451,contentfin)
     img.save ("htmlserver.png")
