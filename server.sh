@@ -1,6 +1,4 @@
 #!/bin/sh
-timeout=1
+timeout=10
 port=18080
-tmppipe=$(mktemp -u)
-mkfifo $tmppipe
-nc -l -p $port -w $timeout < $tmppipe | ./main.rb > $tmppipe
+socat -d -d -T $timeout TCP4-LISTEN:$port,fork,reuseaddr EXEC:./main.rb
