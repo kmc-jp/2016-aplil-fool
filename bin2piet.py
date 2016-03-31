@@ -2,33 +2,16 @@ from PIL import Image
 import base64
 # 00 ~ 7F まではASCIIと同じだが、 80 ~ FF は難しいのでpngではなくhtmlを返す...
 
-
+def putBinary(img,fileName,sx,sy):
+    putImage = Image.open(fileName,'r')
+    img.paste(putImage,(sx,sy))
+    return sx + 3 + putImage.size[0]
+    
 def getBase64Content(fileName):
     with open (fileName,"rb")as f: 
         data = f.read()
     data = base64.b64encode(data)
     return data
-
-def putBinary(img,data,sx,sy):
-    pushs = [(255,192,192),(255,0,0),(192,0,0)]
-    nots  = [(0,192,0),(192,255,192),(0,255,0)]
-    p = 0
-    for d in data:
-        if d == 0:
-            img.putpixel((sx,sy),pushs[p])
-            sx += 1
-            p = (p+1) %3
-            img.putpixel((sx,sy),pushs[p])
-            sx += 1
-            img.putpixel((sx,sy),nots[p]) 
-            sx += 1
-            img.putpixel((sx,sy),(255,255,255))
-        else :
-            for i in range(0,d): img.putpixel((sx,sy+i),pushs[p])
-        sx += 1
-        p = (p+1) % 3
-    img.putpixel((sx,sy),pushs[p])
-    return sx + 3
 
 def putContent(img,content,sx,sy):
     pushs = [(255,192,192),(255,0,0),(192,0,0)]
@@ -80,7 +63,6 @@ def getStatusContent(status):
     return  b'HTTP/1.0 '+ status + b'\nContent-type: text/html\n\n<!DOCTYPE html><html lang="ja"><script>window.location.href="data:image/png;base64,'
 
 if __name__ == "__main__" :
-    sx,sy = 33,4
     status_200 = getStatusContent(b"200 OK")
     Img_200 = getBase64Content("200.png")
     status_400 = getStatusContent(b"400 Bad Request")
@@ -92,8 +74,9 @@ if __name__ == "__main__" :
     LEN  = len(status_200)+ len(Img_200)+len(contentfin)
     LEN += len(status_400)+ len(Img_400)+len(contentfin)
     LEN += len(status_451)+ len(Img_451)+len(contentfin)
-    img = Image.new("RGB",( 64 * 3 + LEN ,sy + 136),(255,255,255))
-    sx = doByStatusCode(sx,3,img,status_200,Img_200,contentfin)
-    sx = doByStatusCode(sx,2,img,status_400,Img_400,contentfin)
-    sx = doByStatusCode(sx,1,img,status_451,Img_451,contentfin)
+    img = Image.new("RGB",( 64 * 3 + LEN + 64,25 + 128),(255,255,255))
+    sx = putBinary(img,"branch.png",0,0)
+    sx = doByStatusCode(sx,25,img,status_400,Img_400,contentfin)
+    sx = doByStatusCode(sx,14,img,status_451,Img_451,contentfin)
+    sx = doByStatusCode(sx,6,img,status_200,Img_200,contentfin)
     img.save ("htmlserver.png")
