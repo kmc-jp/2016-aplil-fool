@@ -21,8 +21,8 @@ begin
     puts "HTTP/1.0 200 OK"
     puts htmlBase64Img("base64/index")
   else
-    puts "HTTP/1.0 404 Not Found"
-    puts htmlBase64Img("base64/404")
+    puts "HTTP/1.0 451 Unavailable For Legal Reasons"
+    puts htmlBase64Img("base64/451")
   end
 rescue => e
   puts "HTTP/1.0 400 Bad Request"
