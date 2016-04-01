@@ -4,4 +4,8 @@ KMCはPietサークルになりました。
 
 Pietを配信するWebサーバになり, WebサーバはPietで書かれます
 
-`while true; do ./server.sh; done`
+`./server.sh`
+
+or
+
+`docker run --rm -p 80:18080 -it wass80/piet-server ./server.sh`
